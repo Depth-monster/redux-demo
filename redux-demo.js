@@ -1,8 +1,14 @@
 const redux = require("redux");
+const reduxLogger = require('redux-logger')
+
 
 const createStore = redux.createStore;
+const combineReducers = redux.combineReducers
+const logger = reduxLogger.createLogger()
+
 
 const BUY_CAKE = "BUY_CAKE";
+const BUY_COFFEE = "BUY_COFFEE";
 
 //there are three parts to implement:
 //ACTION
@@ -19,37 +25,69 @@ function buyCake() {
   };
 }
 
+function buyCoffee() {
+    return {
+      type: BUY_COFFEE,
+      info: "Coffee sold",
+    };
+  }
+
+
 //(prevState,state) => newState
-const initialState = {
+const cakeInitialState = {
   //store
   numOfCakes: 10,
+ 
 };
+const coffeeInitialState = {
+
+    numOfCoffees: 30
+  };
 
 //implementing REDUCER
 //they explain how the state is changed
-const reducer = (state = initialState, action) => {
+const cakeReducer = (state = cakeInitialState, action) => {
   switch (action.type) {
     case BUY_CAKE:
       return {
         ...state,
-        numOfCakes: state.numOfCakes - 1,
+        numOfCakes: state.numOfCakes - 1.5,
       };
     default:
       return state;
   }
 };
 
-//REDUX holds application state
-const store = createStore(reducer);
+
+const coffeeReducer = (state = coffeeInitialState, action) => {
+    switch (action.type) {
+        case BUY_COFFEE:
+          return {
+            ...state,
+            numOfCoffees: state.numOfCoffees - 1,
+          };
+      default:
+        return state;
+    }
+  };
+
+
+  const rootReducer = combineReducers({
+    cake:cakeReducer,//state.cake.numOfCakes
+    coffee:coffeeReducer
+})
+const store = createStore(rootReducer);
 
 // const listener = () => {
 //     console.log('ddddddddddd', store.getState());
 //   };
 //   store.subscribe(listener);
 
-store.subscribe(() => console.log("yeahhhhh", store.getState()));
+store.subscribe(() => console.log("state", store.getState()));
 
 store.dispatch(buyCake());
+store.dispatch(buyCoffee());
 store.dispatch(buyCake());
+store.dispatch(buyCoffee());
 
 
