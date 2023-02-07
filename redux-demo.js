@@ -1,82 +1,93 @@
 const redux = require("redux");
+const reduxLogger = require('redux-logger')
+
+
 const createStore = redux.createStore;
-const applyMiddleware = redux.applyMiddleware;
-const thunkMiddleware = require("redux-thunk").default;
-const axios = require("axios");
+const combineReducers = redux.combineReducers
+const applyMiddleware = redux.applyMiddleware
+const logger = reduxLogger.createLogger()
 
-const initialState = {
-  pending: false,
-  users: [],
-  error: "",
-};
 
-const FETCH_USERS_REQUEST = "FETCH_USERS_REQUEST";
-const FETCH_USERS_SUCCESS = "FETCH_USERS_SUCCESS";
-const FETCH_USERS_FAIL = "FETCH_USERS_FAIL";
+const BUY_CAKE = "BUY_CAKE";//consts for actions
+const BUY_COFFEE = "BUY_COFFEE";
 
-const fetchUsersReq = () => {
+//there are three parts to implement:
+//ACTION
+//REDUCER
+//STORE
+
+//implementing action
+function buyCake() {
+  //action creator buyCake returns action to dispatch
+  //action-creator is function that returns action
   return {
-    type: FETCH_USERS_REQUEST,
+    type: BUY_CAKE,
+    info: "First redux action",
   };
-};
-const fetchUsersSucc = (users) => {
-  return {
-    type: FETCH_USERS_SUCCESS,
-    payload: users,
-  };
-};
-const fetchUsersFail = (error) => {
-  return {
-    type: FETCH_USERS_FAIL,
-    payload: error,
-  };
-};
+}
 
-const reducer = (state = initialState, action) => {
+function buyCoffee() {
+    return {
+      type: BUY_COFFEE,
+      info: "Coffee sold",
+    };
+  }
+
+
+//(prevState,state) => newState
+const cakeInitialState = {
+  //store
+  numOfCakes: 10,
+ 
+};
+const coffeeInitialState = {
+
+    numOfCoffees: 30
+  };
+
+//implementing REDUCER
+//they explain how the state is changed
+const cakeReducer = (state = cakeInitialState, action) => {
   switch (action.type) {
-    case FETCH_USERS_REQUEST:
+    case BUY_CAKE:
       return {
         ...state,
-        pending: true,
+        numOfCakes: state.numOfCakes - 1.5,
       };
-    case FETCH_USERS_SUCCESS:
-      return {
-        ...state,
-        pending: false,
-        users: action.payload,
-      };
-    case FETCH_USERS_FAIL:
-      return {
-        ...state,
-        pending: false,
-        error: action.payload,
-      };
-
     default:
       return state;
   }
 };
 
-//api requests
-const fetchActionCreator = () => {
-  return function (dispatch) {
-    dispatch(fetchUsersReq());
-    axios
-      .get("https://jsonplaceholder.typicode.com/users")
-      .then((res) => {
-        //res.data array of users
-        const users = res.data.map((user) => user.id);
-        dispatch(fetchUsersSucc(users)); //giving users
-      })
 
-      .catch((error) => {
-        dispatch(fetchUsersFail(error.message));
-      });
+const coffeeReducer = (state = coffeeInitialState, action) => {
+    switch (action.type) {
+        case BUY_COFFEE:
+          return {
+            ...state,
+            numOfCoffees: state.numOfCoffees - 1,
+          };
+      default:
+        return state;
+    }
   };
-};
-const store = createStore(reducer, applyMiddleware(thunkMiddleware));
 
-store.subscribe(() => {
-  console.log("aaaaaaaaaa", store.getState());
-});
-store.dispatch(fetchActionCreator());
+
+  const rootReducer = combineReducers({
+    cake:cakeReducer,//state.cake.numOfCakes
+    coffee:coffeeReducer
+})
+const store = createStore(rootReducer,applyMiddleware(logger));
+
+// const listener = () => {
+//     console.log('ddddddddddd', store.getState());
+//   };
+//   store.subscribe(listener);
+console.log('Initial state',store.getState())
+store.subscribe(() =>{});
+store.dispatch(buyCake());
+store.dispatch(buyCoffee());
+store.dispatch(buyCake());
+store.dispatch(buyCoffee());
+
+
